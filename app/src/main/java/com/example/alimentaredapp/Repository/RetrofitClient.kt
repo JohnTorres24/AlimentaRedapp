@@ -4,8 +4,8 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
-    // 10.0.2.2 es el localhost por defecto para el emulador de Android
-    private const val BASE_URL = "http://10.0.2.2:8080/api/"
+    // URL actualizada para apuntar al backend desplegado en Render
+    private const val BASE_URL = "https://alimentared.onrender.com/api/"
 
     val instance: Retrofit by lazy {
         Retrofit.Builder()
