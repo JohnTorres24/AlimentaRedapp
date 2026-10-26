@@ -12,14 +12,31 @@ fun AppNavigation() {
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = "login") {
+        composable("registro") {
+            RegistroOrganizacionScreen(
+                onRegistroExitoso = {
+                    // Después de registrarse, lo mandamos al login
+                    navController.navigate("login") {
+                        popUpTo("registro") { inclusive = true }
+                    }
+                },
+                onIrAlLogin = {
+                    navController.navigate("login") {
+                        popUpTo("registro") { inclusive = true }
+                    }
+                }
+            )
+        }
 
         composable("login") {
             LoginScreen(
                 onLoginSuccess = { tokenExtraido ->
-                    // Navegamos al listado pasando el token real obtenido en el login
                     navController.navigate("listado_lotes/$tokenExtraido") {
                         popUpTo("login") { inclusive = true }
                     }
+                },
+                onIrAlRegistro = {
+                    navController.navigate("registro")
                 }
             )
         }

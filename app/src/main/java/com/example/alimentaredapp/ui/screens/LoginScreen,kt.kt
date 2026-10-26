@@ -14,7 +14,8 @@ import com.example.alimentaredapp.ViewModel.AuthViewModel
 @Composable
 fun LoginScreen(
     viewModel: AuthViewModel = viewModel(),
-    onLoginSuccess: (String) -> Unit // SOLUCIÓN: Ahora acepta un String (el token)
+    onLoginSuccess: (String) -> Unit,
+    onIrAlRegistro: () -> Unit // NUEVO PARÁMETRO
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -73,6 +74,10 @@ fun LoginScreen(
             enabled = uiState !is AuthUiState.Loading
         ) {
             Text("Ingresar")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        TextButton(onClick = onIrAlRegistro) {
+            Text("¿No tienes cuenta? Regístrate")
         }
     }
 }
