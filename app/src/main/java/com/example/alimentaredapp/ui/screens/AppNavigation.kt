@@ -64,5 +64,17 @@ fun AppNavigation() {
                 }
             )
         }
+        composable("confirmar_entrega/{idEntrega}/{token}") { backStackEntry ->
+            val idEntrega = backStackEntry.arguments?.getString("idEntrega")?.toLongOrNull() ?: 0L
+            val token = backStackEntry.arguments?.getString("token") ?: ""
+
+            ConfirmarEntregaScreen(
+                idEntrega = idEntrega,
+                token = token,
+                onConfirmacionExitosa = {
+                    navController.popBackStack() // Regresa a la vista anterior al confirmar
+                }
+            )
+        }
     }
 }
