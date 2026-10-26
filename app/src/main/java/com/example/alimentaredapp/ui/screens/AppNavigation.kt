@@ -76,5 +76,17 @@ fun AppNavigation() {
                 }
             )
         }
+        composable("reportar_incidencia/{idEntrega}/{token}") { backStackEntry ->
+            val idEntrega = backStackEntry.arguments?.getString("idEntrega")?.toLongOrNull() ?: 0L
+            val token = backStackEntry.arguments?.getString("token") ?: ""
+
+            ReportarIncidenciaScreen(
+                idEntrega = idEntrega,
+                token = token,
+                onReporteExitoso = {
+                    navController.popBackStack() // Regresa a la vista anterior al enviar el reporte
+                }
+            )
+        }
     }
 }
