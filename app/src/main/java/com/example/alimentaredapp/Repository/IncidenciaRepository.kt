@@ -23,3 +23,5 @@ class IncidenciaRepository {
         } catch (e: Exception) {
             Result.failure(ApiException("Error de red al reportar: ${e.message}"))
         }
+    }
+}
