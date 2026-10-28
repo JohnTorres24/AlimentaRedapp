@@ -2,17 +2,23 @@ package com.example.alimentaredapp.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.alimentaredapp.dto.PublicarLoteRequestDto
 import com.example.alimentaredapp.ViewModel.LoteUiState
 import com.example.alimentaredapp.ViewModel.LoteViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PublicarLoteScreen(
     token: String,
@@ -22,68 +28,236 @@ fun PublicarLoteScreen(
     var titulo by remember { mutableStateOf("") }
     var descripcion by remember { mutableStateOf("") }
     var cantidad by remember { mutableStateOf("") }
-    var unidadMedida by remember { mutableStateOf("") }
-    var fechaExpiracion by remember { mutableStateOf("") }
-    var categoriaId by remember { mutableStateOf("") }
+    var unidadMedida by remember { mutableStateOf("kg") }
+    var fechaExpiracion by remember { mutableStateOf("2026-10-28") }
+    var horaExpiracion by remember { mutableStateOf("18:00") }
+    var categoriaId by remember { mutableStateOf(1L) }
+    var categoriaNombre by remember { mutableStateOf("Panadería") }
+    var expandedCat by remember { mutableStateOf(false) }
+
+    val categoriasDisponibles = listOf(
+        1L to "Panadería y Masas",
+        2L to "Frutas y Verduras",
+        3L to "Lácteos y Derivados",
+        4L to "Comidas Preparadas",
+        5L to "Granos y No Perecederos"
+    )
 
     val uiState by viewModel.uiState.collectAsState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text("Publicar Alimento", style = MaterialTheme.typography.headlineMedium)
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(value = titulo, onValueChange = { titulo = it }, label = { Text("Título (Ej. Manzanas)") }, modifier = Modifier.fillMaxWidth())
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(value = descripcion, onValueChange = { descripcion = it }, label = { Text("Descripción") }, modifier = Modifier.fillMaxWidth())
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(value = cantidad, onValueChange = { cantidad = it }, label = { Text("Cantidad Total") }, modifier = Modifier.fillMaxWidth())
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(value = unidadMedida, onValueChange = { unidadMedida = it }, label = { Text("Unidad (Ej. KG, UNIDADES)") }, modifier = Modifier.fillMaxWidth())
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(value = fechaExpiracion, onValueChange = { fechaExpiracion = it }, label = { Text("Expiración (YYYY-MM-DD)") }, modifier = Modifier.fillMaxWidth())
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(value = categoriaId, onValueChange = { categoriaId = it }, label = { Text("ID Categoría (Ej. 1)") }, modifier = Modifier.fillMaxWidth())
-        Spacer(modifier = Modifier.height(16.dp))
-
-        when (val state = uiState) {
-            is LoteUiState.Loading -> CircularProgressIndicator()
-            is LoteUiState.SuccessPublicar -> {
-                Text(state.mensaje, color = MaterialTheme.colorScheme.primary)
-                LaunchedEffect(Unit) { onPublicacionExitosa() }
-            }
-            is LoteUiState.Error -> Text(state.message, color = MaterialTheme.colorScheme.error)
-            else -> {}
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            onClick = {
-                val dto = PublicarLoteRequestDto(
-                    titulo = titulo,
-                    descripcion = descripcion,
-                    cantidadTotal = cantidad.toDoubleOrNull() ?: 0.0,
-                    unidadMedida = unidadMedida,
-                    fechaExpiracion = "${fechaExpiracion}T00:00:00", // Adaptación básica de formato fecha
-                    categoriaId = categoriaId.toLongOrNull() ?: 1L
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Publicar Lote de Alimentos") },
+                navigationIcon = {
+                    IconButton(onClick = onPublicacionExitosa) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 )
-                viewModel.publicarLote(token, dto)
-            },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = uiState !is LoteUiState.Loading && titulo.isNotEmpty() && cantidad.isNotEmpty()
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            Text("Publicar")
+            Text(
+                text = "Ingrese los datos del lote disponible para donación (RF03)",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.secondary
+            )
+
+            // Título o Nombre del Lote
+            OutlinedTextField(
+                value = titulo,
+                onValueChange = { titulo = it },
+                label = { Text("Título del lote (ej. Panadería del día)") },
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
+            // Selector Desplegable de Categoría
+            ExposedDropdownMenuBox(
+                expanded = expandedCat,
+                onExpandedChange = { expandedCat = !expandedCat },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                OutlinedTextField(
+                    value = categoriaNombre,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Categoría del Alimento") },
+                    shape = RoundedCornerShape(12.dp),
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCat) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor()
+                )
+
+                ExposedDropdownMenu(
+                    expanded = expandedCat,
+                    onDismissRequest = { expandedCat = false }
+                ) {
+                    categoriasDisponibles.forEach { (id, nombre) ->
+                        DropdownMenuItem(
+                            text = { Text(nombre) },
+                            onClick = {
+                                categoriaId = id
+                                categoriaNombre = nombre
+                                expandedCat = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            // Cantidad y Unidad en una fila
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                OutlinedTextField(
+                    value = cantidad,
+                    onValueChange = { cantidad = it },
+                    label = { Text("Cantidad total") },
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.weight(1.5f),
+                    singleLine = true
+                )
+
+                OutlinedTextField(
+                    value = unidadMedida,
+                    onValueChange = { unidadMedida = it },
+                    label = { Text("Unidad (kg, L, uds)") },
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.weight(1f),
+                    singleLine = true
+                )
+            }
+
+            // Fecha y Hora de Expiración
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                OutlinedTextField(
+                    value = fechaExpiracion,
+                    onValueChange = { fechaExpiracion = it },
+                    label = { Text("Fecha (YYYY-MM-DD)") },
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.weight(1.5f),
+                    singleLine = true
+                )
+
+                OutlinedTextField(
+                    value = horaExpiracion,
+                    onValueChange = { horaExpiracion = it },
+                    label = { Text("Hora (HH:mm)") },
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.weight(1f),
+                    singleLine = true
+                )
+            }
+
+            // Descripción adicional
+            OutlinedTextField(
+                value = descripcion,
+                onValueChange = { descripcion = it },
+                label = { Text("Descripción o condiciones de empaque") },
+                shape = RoundedCornerShape(12.dp),
+                minLines = 3,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            // Estado de Publicación
+            when (val state = uiState) {
+                is LoteUiState.Loading -> {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                    ) {
+                        Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text("Publicando lote en la red comunitaria...", style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                }
+                is LoteUiState.SuccessPublicar -> {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                    ) {
+                        Text(
+                            text = state.mensaje,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                            modifier = Modifier.padding(14.dp)
+                        )
+                    }
+                    LaunchedEffect(Unit) {
+                        onPublicacionExitosa()
+                    }
+                }
+                is LoteUiState.Error -> {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+                    ) {
+                        Text(
+                            text = state.message,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(14.dp)
+                        )
+                    }
+                }
+                else -> {}
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            // Botón de Publicación
+            Button(
+                onClick = {
+                    val timestampFormatted = "${fechaExpiracion.trim()}T${horaExpiracion.trim()}:00"
+                    val dto = PublicarLoteRequestDto(
+                        titulo = titulo.trim(),
+                        descripcion = descripcion.trim(),
+                        cantidadTotal = cantidad.toDoubleOrNull() ?: 1.0,
+                        unidadMedida = unidadMedida.trim().ifBlank { "kg" },
+                        fechaExpiracion = timestampFormatted,
+                        organizacionId = 1L,
+                        categoriaId = categoriaId
+                    )
+                    viewModel.publicarLote(token, dto)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                shape = RoundedCornerShape(12.dp),
+                enabled = uiState !is LoteUiState.Loading && titulo.isNotBlank() && cantidad.isNotBlank()
+            ) {
+                Text("Publicar Lote en la Red", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            }
+
+            OutlinedButton(
+                onClick = onPublicacionExitosa,
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Cancelar")
+            }
         }
     }
 }

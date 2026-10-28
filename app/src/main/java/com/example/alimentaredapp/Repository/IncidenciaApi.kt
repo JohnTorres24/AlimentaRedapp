@@ -11,7 +11,7 @@ import retrofit2.http.Path
 interface IncidenciaApi {
     @POST("entregas/{idEntrega}/incidencias")
     suspend fun reportarIncidencia(
-        @Header("Authorization") token: String,
+        @Header("Authorization") token: String? = null,
         @Path("idEntrega") idEntrega: Long,
         @Body request: ReportarIncidenciaRequestDto
     ): Response<ReportarIncidenciaResponseDto>
