@@ -3,6 +3,7 @@ package com.example.alimentaredapp.Repository
 import com.example.alimentaredapp.dto.SolicitudRequestDto
 import com.example.alimentaredapp.dto.SolicitudResponseDto
 import com.example.alimentaredapp.Exception.ApiException
+import com.example.alimentaredapp.util.ErrorHelper
 
 class SolicitudRepository {
     private val api = RetrofitClient.instance.create(SolicitudApi::class.java)
@@ -14,11 +15,13 @@ class SolicitudRepository {
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
-                // Lanza tu excepción personalizada si hay error 400/500
-                Result.failure(ApiException("Error en la reserva: Código ${response.code()}"))
+                val raw = response.errorBody()?.string()
+                val mensaje = ErrorHelper.mapHttpError(response.code(), raw, "reservar el lote de alimentos")
+                Result.failure(ApiException(mensaje))
             }
         } catch (e: Exception) {
-            Result.failure(ApiException("Error de conexión: ${e.message}"))
+            val mensaje = ErrorHelper.mapNetworkException(e, "procesar la reserva")
+            Result.failure(ApiException(mensaje))
         }
     }
 }

@@ -3,6 +3,7 @@ package com.example.alimentaredapp.Repository
 import com.example.alimentaredapp.dto.ConfirmarEntregaRequestDto
 import com.example.alimentaredapp.dto.ConfirmarEntregaResponseDto
 import com.example.alimentaredapp.Exception.ApiException
+import com.example.alimentaredapp.util.ErrorHelper
 
 class EntregaRepository {
     private val api = RetrofitClient.instance.create(EntregaApi::class.java)
@@ -25,10 +26,13 @@ class EntregaRepository {
                     )
                 )
             } else {
-                Result.failure(ApiException("Error al confirmar la entrega: Código ${response.code()}"))
+                val raw = response.errorBody()?.string()
+                val mensaje = ErrorHelper.mapHttpError(response.code(), raw, "confirmar la entrega")
+                Result.failure(ApiException(mensaje))
             }
         } catch (e: Exception) {
-            Result.failure(ApiException("Error de red al confirmar entrega: ${e.message}"))
+            val mensaje = ErrorHelper.mapNetworkException(e, "confirmar la entrega")
+            Result.failure(ApiException(mensaje))
         }
     }
 }

@@ -15,8 +15,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.alimentaredapp.dto.PublicarLoteRequestDto
+import com.example.alimentaredapp.util.SessionManager
 import com.example.alimentaredapp.ViewModel.LoteUiState
 import com.example.alimentaredapp.ViewModel.LoteViewModel
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,12 +29,20 @@ fun PublicarLoteScreen(
     viewModel: LoteViewModel = viewModel(),
     onPublicacionExitosa: () -> Unit
 ) {
+    val isAdmin = SessionManager.isAdmin
+
+    // Requisito: Fecha y hora actuales de manera automática
+    val sdfFecha = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()) }
+    val sdfHora = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
+    val fechaActual = remember { sdfFecha.format(Date()) }
+    val horaActual = remember { sdfHora.format(Date()) }
+
     var titulo by remember { mutableStateOf("") }
     var descripcion by remember { mutableStateOf("") }
     var cantidad by remember { mutableStateOf("") }
     var unidadMedida by remember { mutableStateOf("kg") }
-    var fechaExpiracion by remember { mutableStateOf("2026-10-28") }
-    var horaExpiracion by remember { mutableStateOf("18:00") }
+    var fechaExpiracion by remember { mutableStateOf(fechaActual) }
+    var horaExpiracion by remember { mutableStateOf(horaActual) }
     var categoriaId by remember { mutableStateOf(1L) }
     var categoriaNombre by remember { mutableStateOf("Panadería") }
     var expandedCat by remember { mutableStateOf(false) }
@@ -144,26 +156,34 @@ fun PublicarLoteScreen(
                 )
             }
 
-            // Fecha y Hora de Expiración
+            // Fecha y Hora (Requisito: Fecha y hora automáticas actuales, no editables excepto por admin)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 OutlinedTextField(
                     value = fechaExpiracion,
-                    onValueChange = { fechaExpiracion = it },
-                    label = { Text("Fecha (YYYY-MM-DD)") },
+                    onValueChange = { if (isAdmin) fechaExpiracion = it },
+                    readOnly = !isAdmin,
+                    label = { Text("Fecha actual") },
+                    supportingText = {
+                        Text(if (isAdmin) "Modo administrador (editable)" else "Automática (no editable)")
+                    },
                     shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.weight(1.5f),
+                    modifier = Modifier.weight(1.4f),
                     singleLine = true
                 )
 
                 OutlinedTextField(
                     value = horaExpiracion,
-                    onValueChange = { horaExpiracion = it },
-                    label = { Text("Hora (HH:mm)") },
+                    onValueChange = { if (isAdmin) horaExpiracion = it },
+                    readOnly = !isAdmin,
+                    label = { Text("Hora actual") },
+                    supportingText = {
+                        Text(if (isAdmin) "Modo administrador (editable)" else "Automática (no editable)")
+                    },
                     shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1.1f),
                     singleLine = true
                 )
             }
@@ -188,7 +208,8 @@ fun PublicarLoteScreen(
                         Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
                             CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
                             Spacer(modifier = Modifier.width(10.dp))
-                            Text("Publicando lote en la red comunitaria...", style = MaterialTheme.typography.bodySmall)
+                            // Requisito: Solo indicar que se está conectando
+                            Text("Conectando y publicando lote...", style = MaterialTheme.typography.bodySmall)
                         }
                     }
                 }

@@ -7,6 +7,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Badge
@@ -20,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -27,6 +29,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.alimentaredapp.dto.RegistroOrganizacionRequestDto
 import com.example.alimentaredapp.util.LocationHelper
+import com.example.alimentaredapp.util.SessionManager
 import com.example.alimentaredapp.ViewModel.OrganizacionUiState
 import com.example.alimentaredapp.ViewModel.OrganizacionViewModel
 
@@ -47,6 +50,15 @@ fun RegistroOrganizacionScreen(
     var direccion by remember { mutableStateOf(direccionAuto) }
     var tipoOrganizacion by remember { mutableStateOf("RECEPTOR") }
     var expandedDropdown by remember { mutableStateOf(false) }
+
+    // Validación estricta de correo: estructura completa con usuario, @ organización y .com
+    val emailRegex = remember {
+        Regex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*\\.com(\\.co)?$", RegexOption.IGNORE_CASE)
+    }
+    val emailValido = email.isNotBlank() && emailRegex.matches(email.trim())
+
+    // Validación estricta de NIT: exactamente 10 dígitos numéricos
+    val nitValido = nitIdentificacion.length == 10 && nitIdentificacion.all { it.isDigit() }
 
     // Sincronizar dirección detectada automáticamente si el usuario no la ha cambiado
     LaunchedEffect(direccionAuto) {
@@ -165,23 +177,55 @@ fun RegistroOrganizacionScreen(
                 shape = RoundedCornerShape(10.dp)
             )
 
-            // NIT / Identificación
+            // NIT / Identificación (Requisito: Obligatorio y exactamente 10 dígitos)
             OutlinedTextField(
                 value = nitIdentificacion,
-                onValueChange = { nitIdentificacion = it },
-                label = { Text("NIT o Documento de Identificación") },
+                onValueChange = { input ->
+                    val soloNumeros = input.filter { it.isDigit() }.take(10)
+                    nitIdentificacion = soloNumeros
+                },
+                label = { Text("NIT o Documento de Identificación (10 dígitos)") },
                 leadingIcon = { Icon(Icons.Default.Badge, contentDescription = null) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                isError = nitIdentificacion.isNotBlank() && !nitValido,
+                supportingText = {
+                    if (nitIdentificacion.isNotBlank() && nitIdentificacion.length < 10) {
+                        Text(
+                            "El NIT debe tener exactamente 10 dígitos (${nitIdentificacion.length}/10)",
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    } else if (nitValido) {
+                        Text("NIT válido (10 dígitos)", color = MaterialTheme.colorScheme.primary)
+                    } else {
+                        Text("Debe contener exactamente 10 dígitos numéricos")
+                    }
+                },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 shape = RoundedCornerShape(10.dp)
             )
 
-            // Correo Electrónico
+            // Correo Electrónico (Requisito: Estructura completa @ la organizacion y el .com)
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
                 label = { Text("Correo Electrónico Institucional") },
+                placeholder = { Text("ejemplo@organizacion.com") },
                 leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                isError = email.isNotBlank() && !emailValido,
+                supportingText = {
+                    if (email.isNotBlank() && !emailValido) {
+                        Text(
+                            "El correo debe tener estructura completa (ej: contacto@organizacion.com)",
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    } else if (emailValido) {
+                        Text("Correo válido", color = MaterialTheme.colorScheme.primary)
+                    } else {
+                        Text("Estructura: usuario@organización.com")
+                    }
+                },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 shape = RoundedCornerShape(10.dp)
@@ -227,7 +271,8 @@ fun RegistroOrganizacionScreen(
                     ) {
                         CircularProgressIndicator(modifier = Modifier.size(24.dp))
                         Spacer(modifier = Modifier.width(12.dp))
-                        Text("Registrando organización en Render...", fontSize = 14.sp)
+                        // Requisito: Solo indicar que se está conectando
+                        Text("Conectando y registrando organización...", fontSize = 14.sp)
                     }
                 }
                 is OrganizacionUiState.Success -> {
@@ -244,6 +289,10 @@ fun RegistroOrganizacionScreen(
                         )
                     }
                     LaunchedEffect(Unit) {
+                        SessionManager.token = "session_${state.data.id}"
+                        SessionManager.userRole = state.data.tipoOrganizacion ?: tipoOrganizacion
+                        SessionManager.userId = state.data.usuarioId ?: state.data.id
+                        SessionManager.userEmail = email.trim()
                         onRegistroExitoso()
                     }
                 }
@@ -267,11 +316,11 @@ fun RegistroOrganizacionScreen(
 
             Spacer(modifier = Modifier.height(6.dp))
 
-            // Botón de Registro
+            // Botón de Registro (habilitado solo cuando el formulario es estrictamente válido)
             val formularioValido = nombre.isNotBlank() &&
-                    email.isNotBlank() &&
+                    emailValido &&
                     password.isNotBlank() &&
-                    nitIdentificacion.isNotBlank() &&
+                    nitValido &&
                     direccion.isNotBlank()
 
             Button(

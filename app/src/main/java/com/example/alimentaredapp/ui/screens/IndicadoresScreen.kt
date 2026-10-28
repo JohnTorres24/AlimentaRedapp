@@ -6,6 +6,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.Assessment
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Groups
@@ -28,7 +29,8 @@ import com.example.alimentaredapp.ViewModel.ReporteViewModel
 fun IndicadoresScreen(
     token: String = "",
     viewModel: ReporteViewModel = viewModel(),
-    onVolver: (() -> Unit)? = null
+    onVolver: (() -> Unit)? = null,
+    onNavigateToAdmin: (() -> Unit)? = null
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -48,6 +50,11 @@ fun IndicadoresScreen(
                     }
                 },
                 actions = {
+                    if (onNavigateToAdmin != null) {
+                        IconButton(onClick = onNavigateToAdmin) {
+                            Icon(Icons.Default.AdminPanelSettings, contentDescription = "Panel Administrador")
+                        }
+                    }
                     IconButton(onClick = { viewModel.cargarIndicadores(token) }) {
                         Icon(Icons.Default.Refresh, contentDescription = "Actualizar")
                     }

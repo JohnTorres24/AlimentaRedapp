@@ -4,6 +4,7 @@ import com.example.alimentaredapp.dto.RegistroOrganizacionRequestDto
 import com.example.alimentaredapp.dto.RegistroOrganizacionResponseDto
 import com.example.alimentaredapp.dto.RegistroUsuarioRequestDto
 import com.example.alimentaredapp.Exception.ApiException
+import com.example.alimentaredapp.util.ErrorHelper
 
 class OrganizacionRepository {
     private val authApi = RetrofitClient.instance.create(AuthApi::class.java)
@@ -14,7 +15,7 @@ class OrganizacionRepository {
             val rolFinal = if (dto.esDonante) "DONANTE" else "RECEPTOR"
             val userDto = RegistroUsuarioRequestDto(
                 nombre = dto.nombre,
-                email = dto.email ?: "contacto@organizacion.org",
+                email = dto.email ?: "contacto@organizacion.com",
                 password = dto.passwordHash ?: "123456",
                 rol = rolFinal
             )
@@ -39,23 +40,13 @@ class OrganizacionRepository {
                     )
                 )
             } else {
-                val rawError = userResponse.errorBody()?.string() ?: ""
-                val errorMessage = when {
-                    userResponse.code() == 502 || rawError.contains("502") || rawError.startsWith("<!DOCTYPE") ->
-                        "El servidor en Render se está iniciando. Por favor reintenta en un momento."
-                    rawError.contains("Ya existe un usuario", ignoreCase = true) ->
-                        "Ya existe un usuario registrado con este correo"
-                    rawError.contains("email", ignoreCase = true) ->
-                        "El formato del correo institucional no es válido"
-                    rawError.isNotBlank() && !rawError.contains("<") ->
-                        rawError
-                    else ->
-                        "Error en el servidor: Código ${userResponse.code()}"
-                }
-                Result.failure(ApiException(errorMessage))
+                val rawError = userResponse.errorBody()?.string()
+                val mensaje = ErrorHelper.mapHttpError(userResponse.code(), rawError, "registrar la organización")
+                Result.failure(ApiException(mensaje))
             }
         } catch (e: Exception) {
-            Result.failure(ApiException("Error de conexión al registrar: ${e.message}"))
+            val mensaje = ErrorHelper.mapNetworkException(e, "registrar la organización")
+            Result.failure(ApiException(mensaje))
         }
     }
 }

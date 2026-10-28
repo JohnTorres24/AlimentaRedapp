@@ -2,8 +2,8 @@ package com.example.alimentaredapp.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.Assignment
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.LocalShipping
 import androidx.compose.material.icons.filled.Storefront
@@ -60,6 +60,9 @@ fun AppNavigation() {
                 onNavigateToIncidencia = { idEntrega ->
                     navController.navigate("reportar_incidencia/$idEntrega/$token")
                 },
+                onNavigateToAdmin = {
+                    navController.navigate("admin_flow")
+                },
                 onLogout = {
                     navController.navigate("login") {
                         popUpTo("main_flow/{token}") { inclusive = true }
@@ -78,6 +81,9 @@ fun AppNavigation() {
                 },
                 onNavigateToIncidencia = { idEntrega ->
                     navController.navigate("reportar_incidencia/$idEntrega/$token")
+                },
+                onNavigateToAdmin = {
+                    navController.navigate("admin_flow")
                 },
                 onLogout = {
                     navController.navigate("login") {
@@ -149,6 +155,15 @@ fun AppNavigation() {
                 }
             )
         }
+
+        // Módulo Completo de Administración (Resumen, Usuarios, Gestión y Auditoría)
+        composable("admin_flow") {
+            AdminFlowScreen(
+                onVolver = {
+                    navController.popBackStack()
+                }
+            )
+        }
     }
 }
 
@@ -157,6 +172,7 @@ fun MainFlowScreen(
     token: String,
     onNavigateToDetalle: (Long) -> Unit,
     onNavigateToIncidencia: (Long) -> Unit,
+    onNavigateToAdmin: () -> Unit = {},
     onLogout: () -> Unit
 ) {
     var currentTab by remember { mutableStateOf("lotes") }
@@ -188,7 +204,8 @@ fun MainFlowScreen(
                 )
                 "metricas" -> IndicadoresScreen(
                     token = token,
-                    onVolver = { currentTab = "lotes" }
+                    onVolver = { currentTab = "lotes" },
+                    onNavigateToAdmin = onNavigateToAdmin
                 )
             }
         }
@@ -215,7 +232,7 @@ fun MainFlowScreen(
                     onClick = { currentTab = "donar" }
                 )
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.Assignment, contentDescription = "Historial") },
+                    icon = { Icon(Icons.AutoMirrored.Filled.Assignment, contentDescription = "Historial") },
                     label = { Text("Historial") },
                     selected = currentTab == "historial",
                     onClick = { currentTab = "historial" }

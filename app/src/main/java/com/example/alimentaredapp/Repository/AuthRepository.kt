@@ -3,6 +3,7 @@ package com.example.alimentaredapp.Repository
 import com.example.alimentaredapp.dto.LoginRequestDto
 import com.example.alimentaredapp.dto.LoginResponseDto
 import com.example.alimentaredapp.Exception.ApiException
+import com.example.alimentaredapp.util.ErrorHelper
 
 class AuthRepository {
     private val api = RetrofitClient.instance.create(AuthApi::class.java)
@@ -14,11 +15,13 @@ class AuthRepository {
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
-                // Manejo de credenciales incorrectas (ej. error 401 o 403)
-                Result.failure(ApiException("Error de autenticación: Credenciales inválidas o código ${response.code()}"))
+                val rawError = response.errorBody()?.string()
+                val mensaje = ErrorHelper.mapHttpError(response.code(), rawError, "iniciar sesión")
+                Result.failure(ApiException(mensaje))
             }
         } catch (e: Exception) {
-            Result.failure(ApiException("Error de conexión con el servidor: ${e.message}"))
+            val mensaje = ErrorHelper.mapNetworkException(e, "iniciar sesión")
+            Result.failure(ApiException(mensaje))
         }
     }
 }

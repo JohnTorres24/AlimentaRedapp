@@ -3,6 +3,7 @@ package com.example.alimentaredapp.Repository
 import com.example.alimentaredapp.dto.ReportarIncidenciaRequestDto
 import com.example.alimentaredapp.dto.ReportarIncidenciaResponseDto
 import com.example.alimentaredapp.Exception.ApiException
+import com.example.alimentaredapp.util.ErrorHelper
 
 class IncidenciaRepository {
     private val api = RetrofitClient.instance.create(IncidenciaApi::class.java)
@@ -18,10 +19,13 @@ class IncidenciaRepository {
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
-                Result.failure(ApiException("Error al reportar incidencia: Código ${response.code()}"))
+                val raw = response.errorBody()?.string()
+                val mensaje = ErrorHelper.mapHttpError(response.code(), raw, "reportar la incidencia")
+                Result.failure(ApiException(mensaje))
             }
         } catch (e: Exception) {
-            Result.failure(ApiException("Error de red al reportar: ${e.message}"))
+            val mensaje = ErrorHelper.mapNetworkException(e, "reportar la incidencia")
+            Result.failure(ApiException(mensaje))
         }
     }
 }

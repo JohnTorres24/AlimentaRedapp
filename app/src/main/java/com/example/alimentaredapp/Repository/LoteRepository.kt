@@ -4,6 +4,7 @@ import com.example.alimentaredapp.dto.LoteResponseDto
 import com.example.alimentaredapp.dto.PublicarLoteRequestDto
 import com.example.alimentaredapp.dto.PublicarLoteResponseDto
 import com.example.alimentaredapp.Exception.ApiException
+import com.example.alimentaredapp.util.ErrorHelper
 
 class LoteRepository {
     private val api = RetrofitClient.instance.create(LoteApi::class.java)
@@ -14,24 +15,29 @@ class LoteRepository {
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
-                Result.failure(ApiException("Error al obtener los lotes: Código ${response.code()}"))
+                val raw = response.errorBody()?.string()
+                val mensaje = ErrorHelper.mapHttpError(response.code(), raw, "consultar los lotes disponibles")
+                Result.failure(ApiException(mensaje))
             }
         } catch (e: Exception) {
-            Result.failure(ApiException("Error de red al consultar lotes: ${e.message}"))
+            val mensaje = ErrorHelper.mapNetworkException(e, "consultar los lotes")
+            Result.failure(ApiException(mensaje))
         }
     }
 
-    // NUEVA FUNCIÓN AGREGADA PARA CU03
     suspend fun publicarLote(token: String, dto: PublicarLoteRequestDto): Result<PublicarLoteResponseDto> {
         return try {
             val response = api.publicarLote("Bearer $token", dto)
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
-                Result.failure(ApiException("Error al publicar el lote: Código ${response.code()}"))
+                val raw = response.errorBody()?.string()
+                val mensaje = ErrorHelper.mapHttpError(response.code(), raw, "publicar el lote de alimentos")
+                Result.failure(ApiException(mensaje))
             }
         } catch (e: Exception) {
-            Result.failure(ApiException("Error de red al publicar: ${e.message}"))
+            val mensaje = ErrorHelper.mapNetworkException(e, "publicar el lote")
+            Result.failure(ApiException(mensaje))
         }
     }
 }

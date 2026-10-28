@@ -7,7 +7,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
-    // Servidor oficial en producción Render
+    // Servidor oficial en producción
     private const val BASE_URL = "https://alimentared.onrender.com/api/"
 
     private val okHttpClient: OkHttpClient by lazy {
