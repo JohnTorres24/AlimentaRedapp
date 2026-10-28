@@ -118,7 +118,7 @@ fun DetalleLoteScreen(
             }
 
             Text(
-                text = "Realizar Solicitud de Reserva (RF05)",
+                text = "Realizar Solicitud de Reserva",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface

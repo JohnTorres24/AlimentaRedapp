@@ -23,7 +23,7 @@ fun AppNavigation() {
         composable("registro") {
             RegistroOrganizacionScreen(
                 onRegistroExitoso = {
-                    navController.navigate("login") {
+                    navController.navigate("main_flow/session_token") {
                         popUpTo("registro") { inclusive = true }
                     }
                 },
@@ -193,14 +193,14 @@ fun MainFlowScreen(
             }
         }
 
-        // Barra de Navegación Inferior (Bottom Navigation Bar de los Mockups)
+        // Barra de Navegación Inferior (Bottom Navigation Bar de los Mockups en Fondo Blanco)
         Surface(
-            tonalElevation = 8.dp,
-            color = MaterialTheme.colorScheme.surfaceVariant
+            tonalElevation = 4.dp,
+            color = MaterialTheme.colorScheme.surface
         ) {
             NavigationBar(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                tonalElevation = 8.dp
+                containerColor = MaterialTheme.colorScheme.surface,
+                tonalElevation = 4.dp
             ) {
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Storefront, contentDescription = "Lotes") },

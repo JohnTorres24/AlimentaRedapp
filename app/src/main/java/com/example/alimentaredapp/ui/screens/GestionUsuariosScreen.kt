@@ -69,7 +69,7 @@ fun GestionUsuariosScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = "Solicitudes de registro pendientes de verificación documental (RF02)",
+                text = "Solicitudes de registro pendientes de verificación documental",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.secondary
             )

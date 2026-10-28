@@ -68,7 +68,7 @@ fun IndicadoresScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Métricas globales y estadísticas de impacto social y ambiental (RF11 / RF12)",
+                text = "Métricas globales y estadísticas de impacto social y ambiental",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.secondary
             )

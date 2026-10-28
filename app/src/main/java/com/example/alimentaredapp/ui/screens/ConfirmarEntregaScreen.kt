@@ -315,7 +315,7 @@ fun ConfirmarEntregaScreen(
                     ) {
                         Icon(Icons.Default.Warning, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Reportar Problema / Incidencia (RF08)")
+                        Text("Reportar Problema / Incidencia")
                     }
                 }
             }

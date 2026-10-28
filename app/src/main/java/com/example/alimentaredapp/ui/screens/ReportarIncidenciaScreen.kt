@@ -93,7 +93,7 @@ fun ReportarIncidenciaScreen(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
-                            text = "Gestión de Incidencias (RF08)",
+                            text = "Gestión de Incidencias",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.error

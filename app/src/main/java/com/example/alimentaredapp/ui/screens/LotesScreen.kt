@@ -50,7 +50,7 @@ fun LotesScreen(
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
-            // Barra de búsqueda / filtro por categoría o ubicación (RF04)[cite: 11]
+            // Barra de búsqueda / filtro por categoría o ubicación
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },

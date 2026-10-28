@@ -42,7 +42,7 @@ fun CrearLoteScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Ingrese los datos del lote disponible para donación (RF03)",
+                text = "Ingrese los datos del lote disponible para donación",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.secondary
             )
@@ -109,7 +109,7 @@ fun CrearLoteScreen(
                         mensajeError = "Por favor completa todos los campos obligatorios."
                     } else {
                         mensajeError = null
-                        // Llamada para enviar al backend (POST /api/lotes)[cite: 12]
+                        // Llamada para enviar al backend (POST /api/lotes)
                         onGuardarLote(titulo, categoria, cantidadTotal, unidadMedida, fechaExpiracion)
                     }
                 },

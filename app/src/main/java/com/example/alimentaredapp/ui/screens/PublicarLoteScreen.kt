@@ -70,7 +70,7 @@ fun PublicarLoteScreen(
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             Text(
-                text = "Ingrese los datos del lote disponible para donación (RF03)",
+                text = "Ingrese los datos del lote disponible para donación",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.secondary
             )

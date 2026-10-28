@@ -86,7 +86,7 @@ fun MisSolicitudesScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = "Historial de transacciones activas e históricas (RF09)",
+                text = "Historial de transacciones activas e históricas",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.secondary
             )
