@@ -1,5 +1,6 @@
 package com.example.alimentaredapp.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.alimentaredapp.ViewModel.ReporteUiState
 import com.example.alimentaredapp.ViewModel.ReporteViewModel
+import com.example.alimentaredapp.util.SessionManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,7 +52,8 @@ fun IndicadoresScreen(
                     }
                 },
                 actions = {
-                    if (onNavigateToAdmin != null) {
+                    // Requisito: Solo el administrador puede ver y acceder al panel de administración
+                    if (SessionManager.isAdmin && onNavigateToAdmin != null) {
                         IconButton(onClick = onNavigateToAdmin) {
                             Icon(Icons.Default.AdminPanelSettings, contentDescription = "Panel Administrador")
                         }
@@ -74,6 +77,29 @@ fun IndicadoresScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // Acceso rápido exclusivo para administradores
+            if (SessionManager.isAdmin && onNavigateToAdmin != null) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onNavigateToAdmin() },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.AdminPanelSettings, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Panel de Administración", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                            Text("Gestión de usuarios, auditoría, reglas y categorías", fontSize = 12.sp, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f))
+                        }
+                    }
+                }
+            }
+
             Text(
                 text = "Métricas globales y estadísticas de impacto social y ambiental",
                 style = MaterialTheme.typography.bodyMedium,

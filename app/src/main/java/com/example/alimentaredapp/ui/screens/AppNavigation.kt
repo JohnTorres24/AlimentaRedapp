@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.alimentaredapp.util.SessionManager
 
 @Composable
 fun AppNavigation() {
@@ -61,9 +62,12 @@ fun AppNavigation() {
                     navController.navigate("reportar_incidencia/$idEntrega/$token")
                 },
                 onNavigateToAdmin = {
-                    navController.navigate("admin_flow")
+                    if (SessionManager.isAdmin) {
+                        navController.navigate("admin_flow")
+                    }
                 },
                 onLogout = {
+                    SessionManager.cerrarSesion()
                     navController.navigate("login") {
                         popUpTo("main_flow/{token}") { inclusive = true }
                     }
@@ -83,9 +87,12 @@ fun AppNavigation() {
                     navController.navigate("reportar_incidencia/$idEntrega/$token")
                 },
                 onNavigateToAdmin = {
-                    navController.navigate("admin_flow")
+                    if (SessionManager.isAdmin) {
+                        navController.navigate("admin_flow")
+                    }
                 },
                 onLogout = {
+                    SessionManager.cerrarSesion()
                     navController.navigate("login") {
                         popUpTo("listado_lotes/{token}") { inclusive = true }
                     }
@@ -158,11 +165,27 @@ fun AppNavigation() {
 
         // Módulo Completo de Administración (Resumen, Usuarios, Gestión y Auditoría)
         composable("admin_flow") {
-            AdminFlowScreen(
-                onVolver = {
+            if (!SessionManager.isAdmin) {
+                // Bloqueo estricto de seguridad: donantes y receptores son redirigidos de inmediato
+                LaunchedEffect(Unit) {
                     navController.popBackStack()
                 }
-            )
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = androidx.compose.ui.Alignment.Center
+                ) {
+                    Text(
+                        text = "Acceso denegado: Se requieren permisos de Administrador.",
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            } else {
+                AdminFlowScreen(
+                    onVolver = {
+                        navController.popBackStack()
+                    }
+                )
+            }
         }
     }
 }
