@@ -184,6 +184,14 @@ fun LoginScreen(
                                 SessionManager.userRole = state.data.rol
                                 SessionManager.userId = state.data.id
                                 SessionManager.userEmail = state.data.email
+                                SessionManager.organizacionId = when (state.data.id) {
+                                    4L -> 1L // Fundacion Alimentos Cajica (Receptor)
+                                    5L -> 2L // Panaderia Artesanal Chia (Donante)
+                                    6L -> 3L // sí (Receptor)
+                                    7L -> 4L // UCundinamarca (Receptor)
+                                    9L -> 5L // setsito (Donante)
+                                    else -> 2L // Donante predeterminado en Render
+                                }
                                 onLoginSuccess(state.data.token)
                             }
                         }

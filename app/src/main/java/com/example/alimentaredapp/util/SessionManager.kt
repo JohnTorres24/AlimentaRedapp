@@ -4,6 +4,7 @@ object SessionManager {
     var token: String = ""
     var userRole: String = "DONANTE"
     var userId: Long = 0L
+    var organizacionId: Long = 0L
     var userEmail: String = ""
 
     /**
@@ -45,6 +46,7 @@ object SessionManager {
         token = ""
         userRole = "DONANTE"
         userId = 0L
+        organizacionId = 0L
         userEmail = ""
     }
 }

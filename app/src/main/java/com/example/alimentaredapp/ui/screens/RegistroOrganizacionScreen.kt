@@ -292,6 +292,7 @@ fun RegistroOrganizacionScreen(
                         SessionManager.token = "session_${state.data.id}"
                         SessionManager.userRole = state.data.tipoOrganizacion ?: tipoOrganizacion
                         SessionManager.userId = state.data.usuarioId ?: state.data.id
+                        SessionManager.organizacionId = state.data.id
                         SessionManager.userEmail = email.trim()
                         onRegistroExitoso()
                     }

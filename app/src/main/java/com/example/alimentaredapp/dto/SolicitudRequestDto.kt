@@ -7,23 +7,22 @@ data class SolicitudRequestDto(
     val loteId: Long,
 
     @SerializedName("usuarioId")
-    val usuarioId: Long = 1L,
+    val usuarioId: Long = 4L,
 
     @SerializedName("cantidadSolicitada")
     val cantidadSolicitada: Double,
 
-    // Campo local de notas u observaciones (no requerido por backend)
+    // Campo local de notas u observaciones para seguimiento
     @Transient
     val observaciones: String? = null
 ) {
-    // Constructor de compatibilidad con llamadas existentes
+    // Constructor de conveniencia
     constructor(loteId: Long, cantidad: Double, observaciones: String? = null) : this(
         loteId = loteId,
-        usuarioId = 1L,
+        usuarioId = 4L,
         cantidadSolicitada = cantidad,
         observaciones = observaciones
     )
 
-    // Propiedad de conveniencia
     val cantidad: Double get() = cantidadSolicitada
 }

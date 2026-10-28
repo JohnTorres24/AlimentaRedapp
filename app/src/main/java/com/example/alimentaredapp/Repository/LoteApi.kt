@@ -3,6 +3,7 @@ package com.example.alimentaredapp.Repository
 import com.example.alimentaredapp.dto.LoteResponseDto
 import com.example.alimentaredapp.dto.PublicarLoteRequestDto
 import com.example.alimentaredapp.dto.PublicarLoteResponseDto
+import com.google.gson.annotations.SerializedName
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -10,6 +11,17 @@ import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
+
+data class CategoriaResponseDto(
+    @SerializedName("id")
+    val id: Long,
+
+    @SerializedName("nombre")
+    val nombre: String,
+
+    @SerializedName("descripcion")
+    val descripcion: String? = null
+)
 
 interface LoteApi {
     // Listado general de lotes (soporta filtro por estado como DISPONIBLE)
@@ -32,6 +44,12 @@ interface LoteApi {
         @Header("Authorization") token: String? = null,
         @Path("id") id: Long
     ): Response<LoteResponseDto>
+
+    // Categorías de alimentos configuradas en el servidor
+    @GET("categorias")
+    suspend fun obtenerCategorias(
+        @Header("Authorization") token: String? = null
+    ): Response<List<CategoriaResponseDto>>
 
     // Publicación de un nuevo lote
     @POST("lotes")

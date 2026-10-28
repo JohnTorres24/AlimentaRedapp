@@ -25,6 +25,39 @@ class LoteRepository {
         }
     }
 
+    suspend fun obtenerLotePorId(token: String, id: Long): Result<LoteResponseDto> {
+        return try {
+            val response = api.obtenerLotePorId("Bearer $token", id)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val raw = response.errorBody()?.string()
+                val mensaje = ErrorHelper.mapHttpError(response.code(), raw, "consultar el detalle del lote")
+                Result.failure(ApiException(mensaje))
+            }
+        } catch (e: Exception) {
+            val mensaje = ErrorHelper.mapNetworkException(e, "obtener la información del lote")
+            Result.failure(ApiException(mensaje))
+        }
+    }
+
+    suspend fun obtenerCategorias(token: String? = null): Result<List<CategoriaResponseDto>> {
+        return try {
+            val authHeader = if (!token.isNullOrBlank()) "Bearer $token" else null
+            val response = api.obtenerCategorias(authHeader)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val raw = response.errorBody()?.string()
+                val mensaje = ErrorHelper.mapHttpError(response.code(), raw, "consultar las categorías de alimentos")
+                Result.failure(ApiException(mensaje))
+            }
+        } catch (e: Exception) {
+            val mensaje = ErrorHelper.mapNetworkException(e, "cargar las categorías")
+            Result.failure(ApiException(mensaje))
+        }
+    }
+
     suspend fun publicarLote(token: String, dto: PublicarLoteRequestDto): Result<PublicarLoteResponseDto> {
         return try {
             val response = api.publicarLote("Bearer $token", dto)
