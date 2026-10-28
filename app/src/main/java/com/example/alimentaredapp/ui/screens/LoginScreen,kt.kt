@@ -22,9 +22,13 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.alimentaredapp.Repository.OrganizacionApi
+import com.example.alimentaredapp.Repository.RetrofitClient
 import com.example.alimentaredapp.ViewModel.AuthUiState
 import com.example.alimentaredapp.ViewModel.AuthViewModel
 import com.example.alimentaredapp.util.SessionManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun LoginScreen(
@@ -184,13 +188,39 @@ fun LoginScreen(
                                 SessionManager.userRole = state.data.rol
                                 SessionManager.userId = state.data.id
                                 SessionManager.userEmail = state.data.email
-                                SessionManager.organizacionId = when (state.data.id) {
-                                    4L -> 1L // Fundacion Alimentos Cajica (Receptor)
-                                    5L -> 2L // Panaderia Artesanal Chia (Donante)
-                                    6L -> 3L // sí (Receptor)
-                                    7L -> 4L // UCundinamarca (Receptor)
-                                    9L -> 5L // setsito (Donante)
-                                    else -> 2L // Donante predeterminado en Render
+                                
+                                try {
+                                    val orgList = withContext(Dispatchers.IO) {
+                                        RetrofitClient.instance.create(OrganizacionApi::class.java).listarOrganizaciones().body()
+                                    }
+                                    val miOrg = orgList?.find { it.usuarioId == state.data.id }
+                                    if (miOrg != null) {
+                                        SessionManager.organizacionId = miOrg.id
+                                    } else {
+                                        SessionManager.organizacionId = when (state.data.id) {
+                                            4L -> 1L // Fundacion Alimentos Cajica (Receptor)
+                                            5L -> 2L // Panaderia Artesanal Chia (Donante)
+                                            6L -> 3L // sí (Receptor)
+                                            7L -> 4L // UCundinamarca (Receptor)
+                                            9L -> 5L // setsito (Donante)
+                                            11L -> 7L // Restaurante (Donante)
+                                            12L -> 8L // Pacho Cundinamarca (Donante)
+                                            13L -> 9L // diego sas (Receptor)
+                                            else -> 2L // Donante predeterminado en Render
+                                        }
+                                    }
+                                } catch (_: Exception) {
+                                    SessionManager.organizacionId = when (state.data.id) {
+                                        4L -> 1L
+                                        5L -> 2L
+                                        6L -> 3L
+                                        7L -> 4L
+                                        9L -> 5L
+                                        11L -> 7L
+                                        12L -> 8L
+                                        13L -> 9L
+                                        else -> 2L
+                                    }
                                 }
                                 onLoginSuccess(state.data.token)
                             }

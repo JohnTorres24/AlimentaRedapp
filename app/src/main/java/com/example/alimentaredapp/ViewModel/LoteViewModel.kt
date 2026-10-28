@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.alimentaredapp.dto.PublicarLoteRequestDto
 import com.example.alimentaredapp.Repository.LoteRepository
+import com.example.alimentaredapp.util.SessionManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -17,7 +18,8 @@ class LoteViewModel : ViewModel() {
     fun obtenerLotes(token: String, categoria: String? = null) {
         viewModelScope.launch {
             _uiState.value = LoteUiState.Loading
-            val result = repository.obtenerLotesDisponibles(token, categoria)
+            val tokenFinal = if (token.isNotBlank()) token else SessionManager.token
+            val result = repository.obtenerLotesDisponibles(tokenFinal, categoria)
 
             result.fold(
                 onSuccess = { lotes ->
@@ -33,7 +35,8 @@ class LoteViewModel : ViewModel() {
     fun publicarLote(token: String, dto: PublicarLoteRequestDto) {
         viewModelScope.launch {
             _uiState.value = LoteUiState.Loading
-            val result = repository.publicarLote(token, dto)
+            val tokenFinal = if (token.isNotBlank()) token else SessionManager.token
+            val result = repository.publicarLote(tokenFinal, dto)
 
             result.fold(
                 onSuccess = { response ->

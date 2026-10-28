@@ -37,7 +37,7 @@ import com.example.alimentaredapp.ViewModel.OrganizacionViewModel
 @Composable
 fun RegistroOrganizacionScreen(
     viewModel: OrganizacionViewModel = viewModel(),
-    onRegistroExitoso: () -> Unit,
+    onRegistroExitoso: (String) -> Unit = {},
     onIrAlLogin: () -> Unit
 ) {
     val context = LocalContext.current
@@ -289,12 +289,13 @@ fun RegistroOrganizacionScreen(
                         )
                     }
                     LaunchedEffect(Unit) {
-                        SessionManager.token = "session_${state.data.id}"
+                        val tokenFinal = state.data.token?.takeIf { it.isNotBlank() } ?: "session_${state.data.id}"
+                        SessionManager.token = tokenFinal
                         SessionManager.userRole = state.data.tipoOrganizacion ?: tipoOrganizacion
                         SessionManager.userId = state.data.usuarioId ?: state.data.id
                         SessionManager.organizacionId = state.data.id
                         SessionManager.userEmail = email.trim()
-                        onRegistroExitoso()
+                        onRegistroExitoso(tokenFinal)
                     }
                 }
                 is OrganizacionUiState.Error -> {

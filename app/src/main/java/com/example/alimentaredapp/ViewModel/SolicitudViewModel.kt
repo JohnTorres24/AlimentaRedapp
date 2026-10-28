@@ -32,7 +32,8 @@ class SolicitudViewModel : ViewModel() {
                 observaciones = observaciones
             )
 
-            val result = repository.solicitarReserva(token, dto)
+            val tokenFinal = if (token.isNotBlank()) token else SessionManager.token
+            val result = repository.solicitarReserva(tokenFinal, dto)
 
             result.fold(
                 onSuccess = { response ->

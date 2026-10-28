@@ -23,8 +23,8 @@ fun AppNavigation() {
     NavHost(navController = navController, startDestination = "login") {
         composable("registro") {
             RegistroOrganizacionScreen(
-                onRegistroExitoso = {
-                    navController.navigate("main_flow/session_token") {
+                onRegistroExitoso = { tokenRegistrado ->
+                    navController.navigate("main_flow/$tokenRegistrado") {
                         popUpTo("registro") { inclusive = true }
                     }
                 },
@@ -199,6 +199,7 @@ fun MainFlowScreen(
     onLogout: () -> Unit
 ) {
     var currentTab by remember { mutableStateOf("lotes") }
+    var selectedEntregaId by remember { mutableLongStateOf(101L) }
 
     Column(modifier = Modifier.fillMaxSize()) {
         Box(modifier = Modifier.weight(1f)) {
@@ -215,11 +216,14 @@ fun MainFlowScreen(
                 "historial" -> MisSolicitudesScreen(
                     token = token,
                     onVolver = { currentTab = "lotes" },
-                    onSeguimientoClick = { currentTab = "entrega" },
+                    onSeguimientoClick = { id ->
+                        selectedEntregaId = id
+                        currentTab = "entrega"
+                    },
                     onReportarIncidenciaClick = onNavigateToIncidencia
                 )
                 "entrega" -> ConfirmarEntregaScreen(
-                    idEntrega = 101L,
+                    idEntrega = selectedEntregaId,
                     token = token,
                     onConfirmacionExitosa = { currentTab = "metricas" },
                     onReportarIncidenciaClick = onNavigateToIncidencia,

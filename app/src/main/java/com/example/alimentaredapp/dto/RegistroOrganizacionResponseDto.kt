@@ -31,7 +31,10 @@ data class RegistroOrganizacionResponseDto(
     val esReceptora: Boolean = false,
 
     @SerializedName("usuarioId")
-    val usuarioId: Long? = null
+    val usuarioId: Long? = null,
+
+    @SerializedName("token")
+    val token: String? = null
 ) {
     // Compatibilidad con código previo de la UI y ViewModels
     val idOrganizacion: Long get() = id

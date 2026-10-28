@@ -1,5 +1,6 @@
 package com.example.alimentaredapp.Repository
 
+import com.example.alimentaredapp.dto.LoginRequestDto
 import com.example.alimentaredapp.dto.RegistroOrganizacionRequestDto
 import com.example.alimentaredapp.dto.RegistroOrganizacionResponseDto
 import com.example.alimentaredapp.dto.RegistroUsuarioRequestDto
@@ -13,30 +14,48 @@ class OrganizacionRepository {
     suspend fun registrarOrganizacion(dto: RegistroOrganizacionRequestDto): Result<RegistroOrganizacionResponseDto> {
         return try {
             val rolFinal = if (dto.esDonante) "DONANTE" else "RECEPTOR"
+            val emailFinal = dto.email?.trim() ?: "contacto@organizacion.com"
+            val passwordFinal = dto.passwordHash ?: "123456"
+
             val userDto = RegistroUsuarioRequestDto(
                 nombre = dto.nombre,
-                email = dto.email ?: "contacto@organizacion.com",
-                password = dto.passwordHash ?: "123456",
+                email = emailFinal,
+                password = passwordFinal,
                 rol = rolFinal
             )
             val userResponse = authApi.registrarUsuario(userDto)
 
             if (userResponse.isSuccessful && userResponse.body() != null) {
                 val user = userResponse.body()!!
+                var orgId = user.id
                 try {
                     val orgReq = dto.copy(usuarioId = user.id)
-                    orgApi.registrarOrganizacion(orgReq)
+                    val orgResponse = orgApi.registrarOrganizacion(orgReq)
+                    if (orgResponse.isSuccessful && orgResponse.body() != null) {
+                        orgId = orgResponse.body()!!.id
+                    }
                 } catch (_: Exception) {}
+
+                // Iniciar sesión inmediatamente para generar el token JWT oficial en el backend
+                var tokenJwt: String? = null
+                try {
+                    val loginRes = authApi.autenticarUsuario(LoginRequestDto(emailFinal, passwordFinal))
+                    if (loginRes.isSuccessful && loginRes.body() != null) {
+                        tokenJwt = loginRes.body()!!.token
+                    }
+                } catch (_: Exception) {}
+
                 Result.success(
                     RegistroOrganizacionResponseDto(
-                        id = user.id,
+                        id = orgId,
                         nombre = dto.nombre,
                         nitIdentificacion = dto.nitIdentificacion,
                         direccion = dto.direccion ?: "Cajicá, Cundinamarca",
                         tipoOrganizacion = rolFinal,
                         esDonante = dto.esDonante,
                         esReceptora = dto.esReceptora,
-                        usuarioId = user.id
+                        usuarioId = user.id,
+                        token = tokenJwt
                     )
                 )
             } else {

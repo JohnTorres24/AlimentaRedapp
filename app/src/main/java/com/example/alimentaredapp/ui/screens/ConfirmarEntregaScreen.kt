@@ -1,5 +1,6 @@
 package com.example.alimentaredapp.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -7,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocalShipping
@@ -36,7 +38,10 @@ fun ConfirmarEntregaScreen(
     onReportarIncidenciaClick: ((Long) -> Unit)? = null,
     onVolver: (() -> Unit)? = null
 ) {
-    var codigoVerificacion by remember { mutableStateOf("PIN-8429") }
+    val pinOficial = remember(idEntrega) {
+        if (idEntrega == 101L) "PIN-8429" else "PIN-${8000 + ((idEntrega * 37) % 1999)}"
+    }
+    var codigoVerificacion by remember { mutableStateOf(pinOficial) }
     var responsable by remember { mutableStateOf("") }
     var notas by remember { mutableStateOf("") }
     var confirmadaLocal by remember { mutableStateOf(false) }
@@ -207,11 +212,102 @@ fun ConfirmarEntregaScreen(
                     fontWeight = FontWeight.Bold
                 )
 
+                // Tarjeta de Identificación y Código PIN de Entrega (Requisito AlimentaRed)
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                    ),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Lock,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column {
+                                    Text(
+                                        text = "Código PIN de Verificación",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                    Text(
+                                        text = "Entrega física de alimentos",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+
+                            Surface(
+                                color = MaterialTheme.colorScheme.primary,
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Text(
+                                    text = pinOficial,
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    letterSpacing = 1.sp
+                                )
+                            }
+                        }
+
+                        Text(
+                            text = "Presenta este código PIN al momento de retirar o entregar los alimentos. La persona receptora o encargada del despacho ingresa este PIN para validar la transacción y certificar la entrega segura.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            FilledTonalButton(
+                                onClick = {
+                                    codigoVerificacion = pinOficial
+                                },
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Usar este PIN en el formulario", fontSize = 13.sp)
+                            }
+                        }
+                    }
+                }
+
                 // Código de Verificación / PIN de Entrega (Requisito Mockup Figma)
                 OutlinedTextField(
                     value = codigoVerificacion,
                     onValueChange = { codigoVerificacion = it },
                     label = { Text("Código de Verificación / PIN de Entrega") },
+                    placeholder = { Text(pinOficial) },
+                    supportingText = {
+                        Text("PIN requerido para la entrega: $pinOficial. Pulsa 'Usar este PIN' para autocompletar.")
+                    },
                     leadingIcon = {
                         Icon(Icons.Default.Lock, contentDescription = null)
                     },
